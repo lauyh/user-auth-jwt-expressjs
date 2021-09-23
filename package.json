@@ -8,7 +8,8 @@
   "private": true,
   "scripts": {
     "dev": "nodemon index.js",
-    "genKeyPair" : "node ./lib/genKeyPair.js"
+    "genKeyPair" : "node ./lib/genKeyPair.js",
+    "seed" : "node ./seeder/seed.js"
   },
   "dependencies": {
     "dotenv": "^10.0.0",
