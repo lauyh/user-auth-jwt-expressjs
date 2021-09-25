@@ -12,7 +12,11 @@ const PORT = process.env.PORT || 9000;
 app.use(cors()) // allow cross origin
 app.use(express.json()); // parse json for post request
 app.use(express.urlencoded({extended:true}));
+
+morgan(':method :url :status :res[content-length] - :response-time ms')
 app.use(morgan()); // logger
+app.use('/api', require('../routes/user'))
+
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
 })
