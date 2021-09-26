@@ -1,6 +1,6 @@
 'use strict';
 
-// ---------- import module -----------------
+// -------------- import module -----------------
 const express = require('express');
 const router = express.Router();
 const {body, validationResult} = require('express-validator');
@@ -10,7 +10,9 @@ const {db} = require('../../lib/sequelize');
 const {User} = require('../../models/User');
 const {generate,compare} = require('../../lib/pwdHelper');
 const {issueJWT, issueRefreshToken} = require('../../lib/jwtHelper');
-//--------- route -----
+
+
+//---------------- route -----------------
 router.post(
     '/register', 
     body('username').isAlphanumeric(),
@@ -57,7 +59,7 @@ router.post(
     async (req,res) => {
         const errors = validationResult(req);
         if(!errors.isEmpty()) {
-            return res.status(400).json({errors: errors.array()})
+            return res.status(400).json({error: errors.array()})
         }
         try {
             const {email, password} = req.body;
@@ -67,13 +69,37 @@ router.post(
                 if(validatePwd) {
                     const accessToken = issueJWT(user);
                     const refreshToken = issueRefreshToken(user);
-                    return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
+                    // to do store the refresh token in redis
+                    
+                    return res.status(200).json({ error:'', message: 'Access granted', accessToken: accessToken, refreshToken: refreshToken });
+                }else {
+                    return res.status(400).json({error: '400', message:'Invalid password'});
                 }
+            }else {
+                return res.status(403).json({error: '403', message:'User not found'}); 
             }
         } catch (error) {
-            console.log(`An error occurred: ${error.message}`);
+            console.log(`[ERR]\tAn error occurred at route - '/login': ${error.message}`);
+            return res.status(500).json({error:'500', message:'Fail to login the user'})
         }
 });
 
+
+router.post(
+    '/token',
+    body('token'),
+    async (req, res) => {
+        const error = validationResult(req);
+        if(!error.isEmpty()) {
+            return res.status(400).json({error: error.array()});
+        }
+        try {
+            const refreshToken = req.body.token;
+            if(!refreshToken){return res.status(401).json({error:'401', message: 'Unauthorized'});}
+
+        } catch (error) {
+            console.log(`[ERR]\tAn error occurred in `)
+        }
+    })
 
 module.exports = router;
