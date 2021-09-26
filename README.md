@@ -2,7 +2,7 @@
 ## Notes
 **WIP**
 
-
+-----------------------------------------------
 This repo is aimed to provide an authentication mechanism with JWT token.
 In order to make the JWT token more secure,, the jwt token will be signed with rsa 256 algorithm.
 The public key and private key is using [PKCS](https://en.wikipedia.org/wiki/PKCS) 1.
