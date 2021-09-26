@@ -1,5 +1,8 @@
 # JWT Authentication
 ## Notes
+**WIP**
+
+
 This repo is aimed to provide an authentication mechanism with JWT token.
 In order to make the JWT token more secure,, the jwt token will be signed with rsa 256 algorithm.
 The public key and private key is using [PKCS](https://en.wikipedia.org/wiki/PKCS) 1.
@@ -75,3 +78,8 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# Reference
+1. [Redis Crash Couse](https://www.youtube.com/watch?v=jgpVdJB2sKQ&ab_channel=WebDevSimplified)
+2. [User Authentication in Web Apps](https://github.com/zachgoll/express-jwt-authentication-starter)
+3. [JWT Authentication Tutorial - Node.js](https://www.youtube.com/watch?v=mbsmsi7l3r4&ab_channel=WebDevSimplified)
