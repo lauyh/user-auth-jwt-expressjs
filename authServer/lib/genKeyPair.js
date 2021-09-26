@@ -18,8 +18,10 @@ function genKeyPair() {
 	});
 
 	const ABSOLUTE_PATH = path.join(__dirname, '../', 'cert/');
-	fs.writeFileSync(ABSOLUTE_PATH + 'id_rsa_pub.pem', keyPair.publicKey); // generate public key file
-	fs.writeFileSync(ABSOLUTE_PATH + 'id_rsa_priv.pem', keyPair.privateKey); // generate private key file
+	fs.writeFileSync(ABSOLUTE_PATH + 'access_token_pub.pem', keyPair.publicKey); // generate public key file
+	fs.writeFileSync(ABSOLUTE_PATH + 'access_token_priv.pem', keyPair.privateKey); // generate private key file
+	fs.writeFileSync(ABSOLUTE_PATH + 'refresh_token_pub.pem', keyPair.publicKey); // generate public key file
+	fs.writeFileSync(ABSOLUTE_PATH + 'refresh_token_priv.pem', keyPair.privateKey); // generate private key file
 } 
 
 genKeyPair()
