@@ -35,6 +35,7 @@ The reason of using Yarn package manager instead of npm package manager is becau
 But you are still able to use `npm` by deleting the `yarn.lock` file and run `npm install`. 
 
 Do update the variable in `.env` file.
+
 ```
 DB_USR=<YOUR_DATABASE_USERNAME>
 DB_PASSWORD=<YOUR_DATABASE_PASSWORD>

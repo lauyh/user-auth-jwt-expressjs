@@ -9,7 +9,7 @@ const {v4:uuid} = require('uuid');
 const {db} = require('../../lib/sequelize');
 const {User} = require('../../models/User');
 const {generate,compare} = require('../../lib/pwdHelper');
-
+const {issueJWT, issueRefreshToken} = require('../../lib/jwtHelper');
 //--------- route -----
 router.post(
     '/register', 
@@ -46,7 +46,7 @@ router.post(
             }
         } catch (error) {
             console.log(`error occurs when creating user: ${error}`)
-            // await t.rollback();
+            return res.status(500).json({error: '500', message:'Error in register user.'})
         }
 });
 
@@ -63,10 +63,15 @@ router.post(
             const {email, password} = req.body;
             let user = await User.findOne({where : {email:email}});
             if(user) {
-                
+                const validatePwd = compare(password, user.password);
+                if(validatePwd) {
+                    const accessToken = issueJWT(user);
+                    const refreshToken = issueRefreshToken(user);
+                    return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
+                }
             }
         } catch (error) {
-            
+            console.log(`An error occurred: ${error.message}`);
         }
 });
 
