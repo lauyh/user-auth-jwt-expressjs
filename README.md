@@ -1,18 +1,19 @@
 # JWT Authentication
 ## Notes
-**WIP**
+----------------------------------------------
+**This repo is WIP**
 
 -----------------------------------------------
 This repo is aimed to provide an authentication mechanism with JWT token.
 In order to make the JWT token more secure,, the jwt token will be signed with rsa 256 algorithm.
 The public key and private key is using [PKCS](https://en.wikipedia.org/wiki/PKCS) 1.
 
-The authserver serve as a authentication server, while the server is serve as a client server(act as backend for frontend applications).
+The `authserver` (WIP) serve as a authentication server, while the server is serve as a client server(act as backend for frontend applications).
 The reason of splitting the server and auth server is to ease the scalability of the application.
 The reasoning behind using JWT token instead of generating a random bearer token is because, this auth server is for in-house use.
 Therefore, the information that attached in the JWT token ease the communication of the application about the user.
 
-The code in the `server` is an example of an in-house web api(e-commerce).
+The code in the `server` is an example of an in-house web api(e-commerce). (Notes: WIP)
 
 This application is a POC application, which is not ready for production. Do use this repo with cautious.
 
@@ -23,6 +24,8 @@ This application is a POC application, which is not ready for production. Do use
 2. Sequelize 
 3. MySQL
 
+1. The insert query is using SQL transaction to ensure the data integrity.
+2. The access token and refresh token are signed with RS 256 as HS 256 is vulnerable to brute forcing.
 # Usage
 ## Requirement
 1. Node JS
