@@ -15,7 +15,7 @@ app.use(express.urlencoded({extended:true}));
 
 morgan(':method :url :status :res[content-length] - :response-time ms')
 app.use(morgan()); // logger
-app.use('/api', require('../routes/user'))
+app.use('/api', require('./routes/user'))
 
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
