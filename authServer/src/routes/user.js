@@ -5,11 +5,19 @@ const express = require('express');
 const router = express.Router();
 const {body, validationResult} = require('express-validator');
 const {v4:uuid} = require('uuid');
+const redis = require('redis');
 // const {controller} = require('../../lib/controller');
 const {db} = require('../../lib/sequelize');
-const {User} = require('../../models/User');
+const {User} = require('../models/User');
 const {generate,compare} = require('../../lib/pwdHelper');
 const {issueJWT, issueRefreshToken} = require('../../lib/jwtHelper');
+require('dotenv').config({path: require('find-config')('.env')})
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
+const REFRESH_EXPIRE_TIMEOUT = process.env.REFRESH_TOKEN_TIMEOUT || 604800; // if the expire is not set in .env will default set to 1 WEEK
+const redis_client = redis.createClient(REDIS_PORT);
+
+redis_client.on('connection',() => {console.log('Connected to redis server.')});
+redis_client.on('error',(err) => {console.log(`An error had occured on redis client: ${err}`)})
 
 
 //---------------- route -----------------
@@ -27,7 +35,7 @@ router.post(
             const {username, email, password} = req.body;
             let user = await User.findOne({where : {email:email}});
             if(!user){
-                console.log('creating user')
+                console.log('[INFO]\tcreating user')
                 const hash = generate(password);
                 const userid = uuid();
                 console.log('hash', hash);
@@ -40,7 +48,6 @@ router.post(
                 if(result){
                     return res.status(201).json({error: '', message: 'Successfully register user.'});
                 }else{
-                    // await t.rollback();
                     return res.status(400).json({error: '500', message: 'Fail to register user.'})
                 }
             }else{
@@ -64,13 +71,15 @@ router.post(
         try {
             const {email, password} = req.body;
             let user = await User.findOne({where : {email:email}});
-            if(user) {
-                const validatePwd = compare(password, user.password);
+            if(user && user.dataValues.status === 'active') {
+                const validatePwd = compare(password, user.dataValues.hash);
+                console.log(validatePwd)
                 if(validatePwd) {
-                    const accessToken = issueJWT(user);
-                    const refreshToken = issueRefreshToken(user);
-                    // to do store the refresh token in redis
-                    
+                    const accessToken = issueJWT(user.dataValues);
+                    // todo: store the accessToken to redis - set to 15s for testing purpose
+                    const refreshToken = issueRefreshToken(user.dataValues);
+   
+                    await redis_client.setex(`user-${user.dataValues.id}`, REFRESH_EXPIRE_TIMEOUT, refreshToken);
                     return res.status(200).json({ error:'', message: 'Access granted', accessToken: accessToken, refreshToken: refreshToken });
                 }else {
                     return res.status(400).json({error: '400', message:'Invalid password'});
@@ -79,7 +88,7 @@ router.post(
                 return res.status(403).json({error: '403', message:'User not found'}); 
             }
         } catch (error) {
-            console.log(`[ERR]\tAn error occurred at route - '/login': ${error.message}`);
+            console.log(`[ERR]\tAn error occurred at route - '/login': ${error}`);
             return res.status(500).json({error:'500', message:'Fail to login the user'})
         }
 });
@@ -87,7 +96,7 @@ router.post(
 
 router.post(
     '/token',
-    body('token'),
+    body('token').isJWT(),
     async (req, res) => {
         const error = validationResult(req);
         if(!error.isEmpty()) {
@@ -96,7 +105,6 @@ router.post(
         try {
             const refreshToken = req.body.token;
             if(!refreshToken){return res.status(401).json({error:'401', message: 'Unauthorized'});}
-
         } catch (error) {
             console.log(`[ERR]\tAn error occurred in `)
         }
