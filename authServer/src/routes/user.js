@@ -5,22 +5,24 @@ const express = require('express');
 const router = express.Router();
 const {body, validationResult} = require('express-validator');
 const {v4:uuid} = require('uuid');
-const redis = require('redis');
-// const {controller} = require('../../lib/controller');
 const {db} = require('../../lib/sequelize');
 const {User} = require('../models/User');
 const {generate,compare} = require('../../lib/pwdHelper');
 const {issueJWT, issueRefreshToken} = require('../../lib/jwtHelper');
 require('dotenv').config({path: require('find-config')('.env')})
-const REDIS_PORT = process.env.REDIS_PORT || 6379;
-const REFRESH_EXPIRE_TIMEOUT = process.env.REFRESH_TOKEN_TIMEOUT || 604800; // if the expire is not set in .env will default set to 1 WEEK
-const redis_client = redis.createClient(REDIS_PORT);
+const RefreshToken = require('../models/RefreshToken');
 
-redis_client.on('connection',() => {console.log('Connected to redis server.')});
-redis_client.on('error',(err) => {console.log(`An error had occured on redis client: ${err}`)})
+
 
 
 //---------------- route -----------------
+/**
+ * Register user
+ * @param {string} - username - name of the user
+ * @param {string} - password - password of the user
+ * @param {string} - email - email of the user
+ * @returns {json} - status of registration
+ */
 router.post(
     '/register', 
     body('username').isAlphanumeric(),
@@ -59,6 +61,13 @@ router.post(
         }
 });
 
+
+/**
+ * User login
+ * @param {string} email
+ * @param {string} password
+ * @return {json} return access token and refresh token
+ */
 router.post(
     '/login',
     body('email').isEmail().normalizeEmail(),
@@ -78,8 +87,15 @@ router.post(
                     const accessToken = issueJWT(user.dataValues);
                     // todo: store the accessToken to redis - set to 15s for testing purpose
                     const refreshToken = issueRefreshToken(user.dataValues);
-   
-                    await redis_client.setex(`user-${user.dataValues.id}`, REFRESH_EXPIRE_TIMEOUT, refreshToken);
+                    const refreshTokenCollection = new RefreshToken({
+                        userId: user.dataValues.id,
+                        refreshToken: refreshToken
+                    });
+                    refreshTokenCollection.save()
+                        .then(()=> {console.log('refresh token save')})
+                        .catch((err)=>{console.log(`Err in insert the refresh token: ${err}`)});
+                    // await redis_client.setex(`user-${user.dataValues.id}`, REFRESH_EXPIRE_TIMEOUT, refreshToken);
+
                     return res.status(200).json({ error:'', message: 'Access granted', accessToken: accessToken, refreshToken: refreshToken });
                 }else {
                     return res.status(400).json({error: '400', message:'Invalid password'});
@@ -94,6 +110,11 @@ router.post(
 });
 
 
+/**
+ * Fetch new access tokens 
+ * @param {string} - refreshToken 
+ * @returns {json} - return access token
+ */
 router.post(
     '/token',
     body('token').isJWT(),
@@ -104,7 +125,12 @@ router.post(
         }
         try {
             const refreshToken = req.body.token;
-            if(!refreshToken){return res.status(401).json({error:'401', message: 'Unauthorized'});}
+            const grantType = req.body.grant_type;
+            if(grantType !== "jwt-bearer") return res.status(401).json({error:'404', message: 'Invalid grant type'});
+            
+            const token = await RefreshToken.findOne({refreshToken: refreshToken});
+            if(!refreshToken || !token) {return res.status(401).json({error:'401', message: 'Unauthorized'});}
+
         } catch (error) {
             console.log(`[ERR]\tAn error occurred in `)
         }
