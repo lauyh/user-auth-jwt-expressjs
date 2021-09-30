@@ -24,8 +24,12 @@ This application is a POC application, which is not ready for production. Do use
 2. Sequelize 
 3. MySQL
 
+## Security
 1. The insert query is using SQL transaction to ensure the data integrity.
 2. The access token and refresh token are signed with RS 256 as HS 256 is vulnerable to brute forcing.
+3. The auth server is refering to [RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.7) and [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523#section-2.1)
+
+
 # Usage
 ## Requirement
 1. Node JS
